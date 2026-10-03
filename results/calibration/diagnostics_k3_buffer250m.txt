@@ -1,0 +1,63 @@
+M1/M2 diagnostics - modelos de calibracion (PLAN_V3_EJECUTABLE.md)
+=====================================================================
+Dataset: results\survival\dataset_k3_buffer250m.csv. Filas evaluables: 778,937. Draws: 20. Folds espaciales por draw: 5. Bootstrap: 1000.
+Bloques espaciales de 100 km: 117.
+Verificacion MLE cerrado vs numerico: {'n_checks': 5, 'n_fallas': 0, 'ejemplos_falla': [], 'ok': True}
+
+*** SOLO TRES MODELOS (M1): KM, Rayleigh sigma=30 fijo (literature weight, sin reescalar), Rayleigh sigma estimado por verosimilitud censurada. Cox y boosting NO estan en este script -- eliminados de M1 por decision explicita del plan. ***
+*** NO se reporta C-index ni calibracion por deciles -- modelos poblacionales, esas metricas pertenecen a R3 (landmark model). ***
+
+sigma_hat: media entre 20 draws = 54.0168, DE entre draws = 1.0141 (variabilidad POSICIONAL, separada del IC espacial de bootstrap de bloque de cada draw individual).
+Tabla completa de sigma_hat por draw (con IC95% bootstrap de bloque espacial cada uno):
+ draw_id  sigma_hat   ic95_lo   ic95_hi
+       1  52.990337 45.907101 59.670437
+       2  55.089129 47.418206 61.922939
+       3  54.999569 48.335878 61.324463
+       4  55.162699 47.761918 63.229426
+       5  54.411930 47.076567 61.106720
+       6  54.068469 46.796917 61.145905
+       7  54.615076 47.311462 61.103638
+       8  54.085482 46.666571 61.139244
+       9  55.157895 47.823078 62.424187
+      10  53.109135 45.873581 60.165685
+      11  54.434137 47.726281 61.225033
+      12  54.801528 47.220894 62.120591
+      13  52.336866 44.919495 59.438968
+      14  53.693203 46.057725 60.564733
+      15  52.156812 44.425793 59.465656
+      16  52.527248 45.589402 59.364419
+      17  54.205148 48.067550 60.062081
+      18  54.047480 46.611313 61.048601
+      19  55.424689 48.006164 62.182909
+      20  53.019023 45.755923 60.717582
+
+IBS (Integrated Brier Score, restringido al soporte temporal observado, IPCW via scikit-survival) por modelo, media entre folds espaciales y entre draws:
+             model     mean      std      min      max
+          KM_train 0.037000 0.001214 0.035016 0.039168
+       Rayleigh_30 0.044150 0.000945 0.042519 0.045705
+Rayleigh_sigma_hat 0.037185 0.001217 0.035174 0.039338
+
+Log-score (log-verosimilitud predictiva) -- solo modelos Rayleigh (KM no tiene densidad parametrica bien definida para esta metrica):
+             model      mean      std       min       max
+       Rayleigh_30 -0.247714 0.005034 -0.256913 -0.240264
+Rayleigh_sigma_hat -0.216614 0.006362 -0.228296 -0.207287
+
+Horizontes evaluados: [5.0, 10.0, 20.0] años. Umbral n_risk>=200 (fijado de antemano, M2). Fraccion de (fold x draw) en que cada horizonte pasa el umbral en el fold de TEST (no en el dataset completo -- criterio mas estricto):
+ horizon  pasa_n_risk_200
+     5.0              1.0
+    10.0              1.0
+    20.0              1.0
+
+Error absoluto |S_modelo(h) - S_KM_prueba(h)| en los horizontes que pasan n_risk>=200 (KM de prueba = ajustada SOLO con el fold de test, fuera de muestra respecto del ajuste de los modelos parametricos):
+horizon abs_error_Rayleigh_30_vs_KM          abs_error_Rayleigh_sigma_hat_vs_KM         
+                               mean      std                               mean      std
+    5.0                    0.004501 0.000853                           0.013456 0.000584
+   10.0                    0.023725 0.000992                           0.013350 0.000708
+   20.0                    0.146113 0.002448                           0.014397 0.002267
+
+Error integrado (area entre la curva parametrica y la KM de prueba, normalizada por el rango de la grilla, dentro del soporte comun train/test):
+                                      metrica     mean      std
+       error_integrado_Rayleigh_30_vs_KM_test 0.155501 0.002275
+error_integrado_Rayleigh_sigma_hat_vs_KM_test 0.032258 0.001506
+
+ADVERTENCIA DE ENTORNO: instalar scikit-survival para este script actualizo numpy/pandas/scikit-learn en el .venv_ai compartido -- ver bloque POR QUE. Verificado sin regresion en 21_build_survival_dataset.py, pero declarado aca para quien re-corra otros scripts del proyecto despues de esta fecha.

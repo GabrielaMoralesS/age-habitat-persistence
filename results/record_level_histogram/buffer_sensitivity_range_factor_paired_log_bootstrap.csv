@@ -1,0 +1,2 @@
+comparacion,log_diff_media,log_diff_ci95_lo,log_diff_ci95_hi,ratio_media,ratio_ci95_lo,ratio_ci95_hi,excluye_1x_en_ratio
+factor_rango_binario / factor_rango_continuo,3.218623607668348,2.9855545938479398,3.4275776437117025,24.993695365105786,19.79747875225562,30.801939035985086,True

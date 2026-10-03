@@ -1,0 +1,27 @@
+PLAN_V4 Tier 1.4 diagnostics - importancia por permutacion (landmark boosting, test 2014->2019)
+=========================================================================================================
+Modelo reentrenado con los mismos landmarks de entrenamiento ([1993, 1998, 2003, 2008]) y la misma busqueda rolling-origin que 24_landmark_forecast.py (random_state=42, mismo LGBM_GRID).
+Sanity check -- AUROC pooled reconstruido: 0.794541 vs. reportado (0.794541) en test_landmark_2014_metrics.csv. Delta=-0.000000. OK (< 1e-4)
+AUPRC pooled reconstruido: 0.037063.
+Baseline promediado sobre draws (mismo criterio usado para las caidas por permutacion): AUROC=0.7945, AUPRC=0.0390, sobre 20/20 draws con ambas clases presentes.
+Localidades en el test congelado: 32,073. Bloques espaciales de 100 km (EPSG:5880): 109.
+Repeticiones de permutacion por covariable/familia: 200.
+
+METODO (resumen, ver bloque POR QUE en el script para el detalle completo):
+  - Importancia = caida de AUROC/AUPRC (baseline - permutado) del landmark boosting ya entrenado, NO ganancia interna del modelo (in-sample, sesgada hacia alta cardinalidad).
+  - La permutacion de cada covariable (o grupo de covariables, para la importancia por familia) se restringe a intercambiar valores SOLO entre localidades del MISMO bloque espacial de 100 km -- nunca globalmente entre todo el bioma.
+  - La permutacion opera por LOCALIDAD (las cuatro covariables son constantes a traves de los 20 draws de una misma localidad, verificado empiricamente) y el valor permutado se transmite por igual a todas las filas (localidad, draw) de esa localidad.
+  - Dentro de cada repeticion, la caida de AUROC/AUPRC se calcula POR DRAW y se promedia sobre los draws con ambas clases presentes (mismo criterio que el resto del proyecto para la incertidumbre posicional).
+  - El intervalo de 95% es el percentil [2.5, 97.5] de esa caida promediada-por-draws A TRAVES de las repeticiones de permutacion -- la fuente de incertidumbre es la aleatoriedad del metodo de permutacion, no la dispersion entre draws (que ya esta promediada dentro de cada repeticion).
+
+IMPORTANCIA INDIVIDUAL POR COVARIABLE:
+  age_at_t: AUROC drop=0.0062 [0.0029, 0.0097]  AUPRC drop=0.0034 [0.0018, 0.0047]  (bloques singleton en la ultima repeticion: 22 bloques / 22 localidades, sin permutar).
+  A_i_t: AUROC drop=0.1963 [0.1862, 0.2056]  AUPRC drop=0.0255 [0.0247, 0.0261]  (bloques singleton en la ultima repeticion: 22 bloques / 22 localidades, sin permutar).
+  loss_5y: AUROC drop=0.0287 [0.0250, 0.0320]  AUPRC drop=0.0102 [0.0090, 0.0116]  (bloques singleton en la ultima repeticion: 22 bloques / 22 localidades, sin permutar).
+  n_transitions_before_t: AUROC drop=0.0441 [0.0378, 0.0509]  AUPRC drop=0.0103 [0.0083, 0.0119]  (bloques singleton en la ultima repeticion: 22 bloques / 22 localidades, sin permutar).
+
+IMPORTANCIA AGRUPADA POR FAMILIA:
+  Age (age_at_t): AUROC drop=0.0062 [0.0029, 0.0097]  AUPRC drop=0.0034 [0.0018, 0.0047]
+  Remaining support (A_i_t): AUROC drop=0.1963 [0.1862, 0.2056]  AUPRC drop=0.0255 [0.0247, 0.0261]
+  Recent dynamics (loss + transitions) (loss_5y+n_transitions_before_t): AUROC drop=0.0568 [0.0511, 0.0621]  AUPRC drop=0.0138 [0.0123, 0.0151]
+  Habitat descriptors: SIN covariable propia en COVARIATE_COLS actual (age_at_t, A_i_t, loss_5y, n_transitions_before_t) -- NaN, no calculada. Ver bloque POR QUE: esto es un hueco real del modelo (falta clase de vegetacion / descriptor de habitat como covariable), no un error de mapeo de esta reconstruccion.

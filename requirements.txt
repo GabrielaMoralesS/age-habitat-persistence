@@ -1,0 +1,9 @@
+numpy
+pandas
+scipy
+scikit-learn
+scikit-survival
+lightgbm
+geopandas
+matplotlib
+earthengine-api

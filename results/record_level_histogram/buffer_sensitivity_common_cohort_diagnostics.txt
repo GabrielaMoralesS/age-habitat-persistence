@@ -1,0 +1,25 @@
+O1f diagnostics - sensibilidad al buffer, cohorte comun (O1e)
+======================================================================
+Entrada: results\record_level_histogram\record_loss_derived_all_buffers.csv
+Localidades unicas (las mismas en los cuatro buffers): 40,000.
+Bloques espaciales de 100 km (EPSG:5880, compartidos por los cuatro buffers): 101.
+Bootstrap: 1000 iteraciones, semilla=42, remuestreo de BLOQUES unicos con reemplazo (nunca de registros sueltos).
+
+Tabla por buffer:
+ buffer_m  n_records  n_locations  binary_pct  binary_ci95_lo  binary_ci95_hi  continuous_pct  continuous_ci95_lo  continuous_ci95_hi
+        0     157268        40000    1.702826        1.110110        2.531189        1.702826            1.110110            2.531189
+      100     157268        40000   16.488415       13.112089       20.342366        1.945806            1.462515            2.584314
+      250     157268        40000   36.398377       30.431891       43.856755        2.148318            1.619329            2.871516
+      500     157268        40000   54.901188       48.148705       63.358495        2.152646            1.643374            2.828331
+
+Factor de rango (max/min entre los cuatro buffers), con IC95% que hereda la correlacion entre buffers (misma remuestra de bloques dentro de cada iteracion):
+                                  serie  buffer_min_pct  buffer_max_pct  range_factor  range_factor_ci95_lo  range_factor_ci95_hi
+   binario (frac_loss_after_record > 0)               0             500     32.241225             23.102034             47.693199
+continuo (media frac_loss_after_record)               0             500      1.264161              1.049965              1.752981
+
+Bootstrap PAREADO (misma remuestra de bloques para ambas series en cada iteracion) de la diferencia entre los dos factores de rango, en escala log (log-razon, no diferencia lineal -- ver bloque POR QUE):
+                                 comparacion  log_diff_media  log_diff_ci95_lo  log_diff_ci95_hi  ratio_media  ratio_ci95_lo  ratio_ci95_hi  excluye_1x_en_ratio
+factor_rango_binario / factor_rango_continuo        3.218624          2.985555          3.427578    24.993695      19.797479      30.801939                 True
+  El binario es 24.99x el continuo (IC95% [19.80x, 30.80x]) -- excluye 1x, diferencia formalmente confirmada.
+
+NO mezclado con O1d (results/record_level/, 135.021 localidades, subset sin_sospechosas): los numeros previos del borrador del paper (binario 1.8-47.7%, 26-fold) salian de esa otra cohorte y quedan descartados por este script -- ver bloque POR QUE.

@@ -1,0 +1,31 @@
+PLAN_V4 Tier 1.5 diagnostics - composicion de la cohorte por clase de MapBiomas
+===========================================================================================
+Asset MapBiomas (congelado, mismo de results/frozen/cohort_manifest.txt): projects/mapbiomas-public/assets/brazil/lulc/collection10/mapbiomas_brazil_collection10_integration_v2
+Clases forestales: [3, 4, 5, 49]. Y_max descubierto: 2024.
+Localidades-año de entrada, universo total: 149,511.
+Excluidas por entry_year > Y_max (sin banda en el asset): 17,894.
+Localidades-año consultadas a Earth Engine (punto exacto, banda del año de entrada): 131,617.
+Chunks de checkpoint (acumulado): 346. Nuevos en esta corrida: 340. Fallidos: 0 .
+Pixel enmascarado en el punto exacto (sin dato, fuera de Brasil): 95.
+Punto exacto NO forestal en el año de entrada: 87,887.
+Cohorte con soporte forestal al entrar (punto exacto): 43,635 localidades-entrada (33.2% de las consultadas).
+
+NOTA -- esta cifra es una definicion espacial DISTINTA de la de D2/R3 (soporte agregado en el buffer de 250m, H_i>0): compara punto exacto vs. area, no deberian coincidir numericamente y su diferencia no es un error (ver bloque POR QUE).
+
+COMPOSICION DE LA COHORTE POR CLASE (punto exacto, año de entrada):
+ mapbiomas_class  n_pairs  pct_of_forest_cohort  pct_of_all_queried                                      class_label
+               3    40134             91.976624           30.493021            Formacao Florestal (Forest Formation)
+              49     3181              7.290019            2.416861 Restinga Arborizada (Wooded Sandbank Vegetation)
+               4      186              0.426263            0.141319            Formacao Savanica (Savanna Formation)
+               5      134              0.307093            0.101811                             Manguezal (Mangrove)
+
+TASA DE CONVERSION POSTERIOR (buffer 250m, evento identico a D2/R3: primer spell persistente de k=2 años no-forestales tras la entrada, censura L_2=2023):
+  Localidades-entrada con tasa calculable: 40,507 de 43,635 en la cohorte forestal.
+  Excluidas -- sin seguimiento observable (censura): 3,128.
+  Excluidas -- sin trayectoria de 250m extraida para esa localidad: 0.
+  Excluidas -- sin soporte forestal en el AGREGADO de 250m (desacuerdo punto vs. buffer): 0.
+ mapbiomas_class  n_pairs_conversion  mean_conversion_rate  conversion_rate_ci95_lo  conversion_rate_ci95_hi
+               3               37305              0.031022                 0.023968                 0.040544
+               4                 163              0.104173                 0.042022                 0.207667
+               5                 129              0.080725                 0.037326                 0.161419
+              49                2910              0.034065                 0.027324                 0.042045

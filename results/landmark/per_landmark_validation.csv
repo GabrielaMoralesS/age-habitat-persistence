@@ -1,0 +1,4 @@
+landmark_val,train_landmarks,horizon_years,n_rows_val,n_events_val,prevalence_val,auprc_val,auprc_sobre_prevalencia,auroc_val,hyperparams
+1998,1993,5,50383,1254,0.024889347597403886,0.0793763502981281,3.1891695829908997,,"{'num_leaves': 7, 'learning_rate': 0.05, 'n_estimators': 150, 'min_child_samples': 50}"
+2003,1993;1998,5,95301,1647,0.017282085182736804,0.0515836978437226,2.984807521678571,,"{'num_leaves': 7, 'learning_rate': 0.05, 'n_estimators': 150, 'min_child_samples': 50}"
+2008,1993;1998;2003,5,187934,2182,0.011610458990922345,0.0435660073277892,3.7523070674338848,,"{'num_leaves': 7, 'learning_rate': 0.05, 'n_estimators': 150, 'min_child_samples': 50}"

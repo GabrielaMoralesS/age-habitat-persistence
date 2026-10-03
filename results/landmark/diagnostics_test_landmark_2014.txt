@@ -1,0 +1,74 @@
+R3 diagnostics - landmark forecasting a 5 años (PLAN_V3_EJECUTABLE.md)
+===========================================================================
+Ventana: 1985-2024. h=5, k=2. t_max confirmable=2018.
+Landmarks de entrenamiento (rolling-origin interno): [1993, 1998, 2003, 2008].
+Landmark de TEST (congelado, tocado una sola vez): 2014 -> 2019.
+Draws Monte Carlo reusados de D2 (mismos que R2): 20.
+
+SELECCION DE HIPERPARAMETROS -- LANDMARK BOOSTING (rolling-origin, SOLO landmarks de entrenamiento, el test congelado NUNCA participa de esto):
+  Mejor combinacion: {'num_leaves': 7, 'learning_rate': 0.05, 'n_estimators': 150, 'min_child_samples': 50}, AUPRC rolling media=0.0582
+                                                                                 params  landmark_val    auprc
+ {'num_leaves': 7, 'learning_rate': 0.05, 'n_estimators': 150, 'min_child_samples': 50}          1998 0.079376
+ {'num_leaves': 7, 'learning_rate': 0.05, 'n_estimators': 150, 'min_child_samples': 50}          2003 0.051584
+ {'num_leaves': 7, 'learning_rate': 0.05, 'n_estimators': 150, 'min_child_samples': 50}          2008 0.043566
+  {'num_leaves': 7, 'learning_rate': 0.1, 'n_estimators': 100, 'min_child_samples': 50}          1998 0.071709
+  {'num_leaves': 7, 'learning_rate': 0.1, 'n_estimators': 100, 'min_child_samples': 50}          2003 0.050901
+  {'num_leaves': 7, 'learning_rate': 0.1, 'n_estimators': 100, 'min_child_samples': 50}          2008 0.042909
+{'num_leaves': 15, 'learning_rate': 0.05, 'n_estimators': 150, 'min_child_samples': 50}          1998 0.068837
+{'num_leaves': 15, 'learning_rate': 0.05, 'n_estimators': 150, 'min_child_samples': 50}          2003 0.050167
+{'num_leaves': 15, 'learning_rate': 0.05, 'n_estimators': 150, 'min_child_samples': 50}          2008 0.042768
+ {'num_leaves': 15, 'learning_rate': 0.1, 'n_estimators': 100, 'min_child_samples': 50}          1998 0.066520
+ {'num_leaves': 15, 'learning_rate': 0.1, 'n_estimators': 100, 'min_child_samples': 50}          2003 0.046811
+ {'num_leaves': 15, 'learning_rate': 0.1, 'n_estimators': 100, 'min_child_samples': 50}          2008 0.040741
+
+SELECCION DE HIPERPARAMETROS -- LOGISTICA (mismo protocolo rolling-origin, mismos landmarks de entrenamiento, mismas COVARIATE_COLS y mismos draws que el boosting -- ver bloque POR QUE):
+  Mejor combinacion: {'C': 10.0}, AUPRC rolling media=0.0674
+     params  landmark_val    auprc
+{'C': 10.0}          1998 0.096486
+{'C': 10.0}          2003 0.060931
+{'C': 10.0}          2008 0.044636
+ {'C': 1.0}          1998 0.095696
+ {'C': 1.0}          2003 0.060788
+ {'C': 1.0}          2008 0.044692
+ {'C': 0.1}          1998 0.092430
+ {'C': 0.1}          2003 0.060895
+ {'C': 0.1}          2008 0.044843
+{'C': 0.01}          1998 0.088984
+{'C': 0.01}          2003 0.057688
+{'C': 0.01}          2008 0.045247
+
+Filas por landmark (localidad x draw en riesgo, ver bloque POR QUE sobre el gate de B1):
+  1993: 22,037 filas, Z=1 en 2.94%
+  1998: 50,383 filas, Z=1 en 2.49%
+  2003: 95,301 filas, Z=1 en 1.73%
+  2008: 187,934 filas, Z=1 en 1.16%
+  2014: 378,886 filas, Z=1 en 1.06%
+
+*** TEST CONGELADO 2014->2019, siete metodos (Brier/deciles/ICI SOLO para los cuatro que son probabilidades: Rayleigh-30, Rayleigh estimado, landmark boosting, landmark logistica -- los tres de ranking se evaluan solo con AUROC/AUPRC, ver bloque POR QUE): ***
+           metodo    auroc    auprc  prevalencia  brier_5y      ici  auroc_ic95_lo  auroc_ic95_hi  auprc_ic95_lo  auprc_ic95_hi
+        aleatorio 0.497925 0.010604     0.010618       NaN      NaN       0.488828       0.509215       0.007896       0.014246
+      mas_antiguo 0.469666 0.010252     0.010618       NaN      NaN       0.415439       0.522726       0.007749       0.014065
+      rayleigh_30 0.469666 0.010252     0.010618  0.013131 0.039107       0.415439       0.522726       0.007749       0.014065
+rayleigh_estimado 0.468858 0.010167     0.010618  0.011031 0.016718       0.415134       0.521192       0.007660       0.013830
+ perdida_reciente 0.743923 0.024600     0.010618       NaN      NaN       0.698369       0.778087       0.019022       0.030496
+landmark_boosting 0.794541 0.037063     0.010618  0.010480 0.006695       0.757866       0.821193       0.027731       0.046614
+landmark_logistic 0.778212 0.036154     0.010618  0.010503 0.005693       0.740050       0.805057       0.027661       0.045625
+
+IC95% por bootstrap de BLOQUE ESPACIAL (100 km, todas las filas de una localidad se mueven juntas al remuestrear):
+           metodo  auroc_ic95_lo  auroc_ic95_hi  auprc_ic95_lo  auprc_ic95_hi
+        aleatorio       0.488828       0.509215       0.007896       0.014246
+      mas_antiguo       0.415439       0.522726       0.007749       0.014065
+      rayleigh_30       0.415439       0.522726       0.007749       0.014065
+rayleigh_estimado       0.415134       0.521192       0.007660       0.013830
+ perdida_reciente       0.698369       0.778087       0.019022       0.030496
+landmark_boosting       0.757866       0.821193       0.027731       0.046614
+landmark_logistic       0.740050       0.805057       0.027661       0.045625
+
+Prevalencia del outcome (Z=1) en el test congelado: 1.0618% (IC95% bootstrap de bloque espacial: [0.7829%, 1.4218%]). Se reporta junto a los AUPRC porque el AUPRC de un ranking sin señal es aprox. igual a la prevalencia (no a 0.5 como el AUROC) -- sin esta referencia un AUPRC de 0.037 parece bajo en terminos absolutos, pero hay que compararlo contra la prevalencia real de ~1%.
+
+Bootstrap PAREADO de diferencias entre metodos (mismos bloques espaciales y las mismas localidades remuestreadas a la vez en las tres comparaciones, IC95%; un intervalo que no cruza 0 indica diferencia consistente bajo la incertidumbre espacial):
+                          comparacion  auroc_diff_media  auroc_diff_ic95_lo  auroc_diff_ic95_hi  auprc_diff_media  auprc_diff_ic95_lo  auprc_diff_ic95_hi
+ landmark_boosting - perdida_reciente          0.050566            0.029807            0.070505          0.012618            0.007120            0.017954
+      landmark_boosting - rayleigh_30          0.321946            0.252018            0.390040          0.026784            0.018766            0.035295
+       perdida_reciente - rayleigh_30          0.271380            0.200680            0.344262          0.014166            0.009710            0.018896
+landmark_boosting - landmark_logistic          0.016407            0.008443            0.025285          0.000832           -0.002696            0.003515

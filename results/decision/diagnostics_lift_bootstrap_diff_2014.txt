@@ -1,0 +1,14 @@
+B2b diagnostics - IC95% pareado por bootstrap de bloque espacial de Delta-Lift@B
+===============================================================================
+Landmark de decision (t0): 2014. Comparacion: landmark_boosting - landmark_logistic.
+Universo de decision: 32,073 localidades. Draws Monte Carlo (M): 20.
+r_bar_i reusados sin recalcular de: r_bar_landmark_boosting_2014.csv, r_bar_landmark_logistic_2014.csv.
+Bootstrap: 1000 iteraciones, bloques de 100 km (mismo CRS/tamano que 22/24/25), remuestra UNICA por iteracion aplicada a ambos metodos (pareado -- ver bloque POR QUE), outcome Y-barra_i promediado entre los 20 draws Monte Carlo.
+Denominador de Lift@B por iteracion: b_eff * media(Y-barra) SOBRE LA REMUESTRA (forma cerrada, identica formula que tiebreak_averaged_topb en 25_resurvey_decision.py), NUNCA una permutation nueva -- identico entre los dos metodos dentro de la misma iteracion, asi que la unica fuente de la diferencia es el numerador (CapturedEvents@B bajo cada ranking).
+Desempate: clave seeded fija (tiebreak_seed=4242), identica a la usada en la tabla principal de 25_resurvey_decision.py.
+
+   B  lift_landmark_boosting_bootstrap_media  lift_landmark_boosting_bootstrap_p2.5  lift_landmark_boosting_bootstrap_p97.5  lift_landmark_logistic_bootstrap_media  lift_landmark_logistic_bootstrap_p2.5  lift_landmark_logistic_bootstrap_p97.5  delta_lift_boosting_menos_logistic_media  delta_lift_ic95_lo  delta_lift_ic95_hi  ic95_cruza_cero  n_iteraciones_validas
+ 500                                4.164376                               2.952595                                5.298171                                3.539002                               2.577658                                4.549487                                  0.625374           -0.323576            1.559965             True                   1000
+1000                                3.860758                               2.857008                                5.004626                                3.421920                               2.641690                                4.330230                                  0.438838           -0.231103            1.093496             True                   1000
+
+Lectura: un IC95% que NO cruza cero indica que la ventaja de boosting sobre logistica en Lift@B es consistente bajo la incertidumbre espacial (bloques de 100 km remuestreados con reemplazo), no solo un artefacto de dos intervalos individuales que casualmente no se solapan del todo.

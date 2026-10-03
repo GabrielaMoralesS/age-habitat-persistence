@@ -1,0 +1,13 @@
+R3 auxiliar diagnostics - per_landmark_validation.csv
+=========================================================
+Fuente: results\landmark\rolling_origin_by_landmark.csv (AUPRC) + run_log.txt / 24_landmark_forecast.py (n_filas, n_eventos por landmark, literal, ver LANDMARK_LOG_STATS en este script).
+Hiperparametros ganadores (mayor AUPRC medio rolling-origin): {'num_leaves': 7, 'learning_rate': 0.05, 'n_estimators': 150, 'min_child_samples': 50}
+
+ landmark_val train_landmarks  horizon_years  n_rows_val  n_events_val  prevalence_val  auprc_val  auprc_sobre_prevalencia  auroc_val                                                                            hyperparams
+         1998            1993              5       50383          1254        0.024889   0.079376                 3.189170        NaN {'num_leaves': 7, 'learning_rate': 0.05, 'n_estimators': 150, 'min_child_samples': 50}
+         2003       1993;1998              5       95301          1647        0.017282   0.051584                 2.984808        NaN {'num_leaves': 7, 'learning_rate': 0.05, 'n_estimators': 150, 'min_child_samples': 50}
+         2008  1993;1998;2003              5      187934          2182        0.011610   0.043566                 3.752307        NaN {'num_leaves': 7, 'learning_rate': 0.05, 'n_estimators': 150, 'min_child_samples': 50}
+
+auprc_sobre_prevalencia = auprc_val / prevalence_val: normaliza el AUPRC contra el piso trivial de un ranking sin señal (que es aprox. igual a la prevalencia, no a 0.5 como el AUROC -- ver bloque POR QUE de 24_landmark_forecast.py). Un valor de 1.0 significa 'igual que al azar'; los tres landmarks de validacion quedan bien por encima de 1.0.
+
+auroc_val = NaN A PROPOSITO: rolling_origin_select_hyperparams en 24_landmark_forecast.py (linea ~401) solo calcula average_precision_score en cada particion de la busqueda rolling-origin, nunca roc_auc_score -- ese numero simplemente no existe en ningun log guardado. Calcularlo exigiria reentrenar el LightGBM de cada particion, fuera de alcance de esta tarea (que pide explicitamente no entrenar modelos nuevos). El AUROC SI esta disponible, pero solo para el test CONGELADO de 2014->2019 (no un landmark de validacion): ver results/landmark/test_landmark_2014_metrics.csv.

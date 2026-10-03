@@ -1,0 +1,13 @@
+params,landmark_val,auprc
+"{'num_leaves': 7, 'learning_rate': 0.05, 'n_estimators': 150, 'min_child_samples': 50}",1998,0.07937635029812817
+"{'num_leaves': 7, 'learning_rate': 0.05, 'n_estimators': 150, 'min_child_samples': 50}",2003,0.05158369784372263
+"{'num_leaves': 7, 'learning_rate': 0.05, 'n_estimators': 150, 'min_child_samples': 50}",2008,0.043566007327789216
+"{'num_leaves': 7, 'learning_rate': 0.1, 'n_estimators': 100, 'min_child_samples': 50}",1998,0.07170921491772517
+"{'num_leaves': 7, 'learning_rate': 0.1, 'n_estimators': 100, 'min_child_samples': 50}",2003,0.05090092572304328
+"{'num_leaves': 7, 'learning_rate': 0.1, 'n_estimators': 100, 'min_child_samples': 50}",2008,0.04290919589055928
+"{'num_leaves': 15, 'learning_rate': 0.05, 'n_estimators': 150, 'min_child_samples': 50}",1998,0.06883662087328522
+"{'num_leaves': 15, 'learning_rate': 0.05, 'n_estimators': 150, 'min_child_samples': 50}",2003,0.050167207601317335
+"{'num_leaves': 15, 'learning_rate': 0.05, 'n_estimators': 150, 'min_child_samples': 50}",2008,0.04276830426363788
+"{'num_leaves': 15, 'learning_rate': 0.1, 'n_estimators': 100, 'min_child_samples': 50}",1998,0.06651961191497838
+"{'num_leaves': 15, 'learning_rate': 0.1, 'n_estimators': 100, 'min_child_samples': 50}",2003,0.04681066151762234
+"{'num_leaves': 15, 'learning_rate': 0.1, 'n_estimators': 100, 'min_child_samples': 50}",2008,0.040741292409991366

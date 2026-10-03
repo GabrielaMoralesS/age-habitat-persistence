@@ -1,0 +1,23 @@
+# Large or third-party inputs
+data/*
+!data/grid_5km.gpkg
+!data/README.md
+
+# Regenerated intermediates
+results/trajectory/
+results/survival/
+results/landmark/test_landmark_*_predictions.csv
+results/**/chunks/
+results/**/.chunks*/
+results/**/run_log.txt
+
+# Python
+__pycache__/
+*.pyc
+.venv*/
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
