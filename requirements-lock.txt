@@ -1,0 +1,14 @@
+# Versions installed in the local analysis environment (Python 3.11.9) used for this project.
+# The Earth Engine extraction step (20_trajectory_extract.py) was run on a separate cluster
+# environment; earthengine-api below is the local version.
+numpy==2.4.6
+pandas==3.0.5
+scipy==1.16.3
+scikit-learn==1.9.0
+scikit-survival==0.28.0
+lightgbm==4.6.0
+geopandas==1.1.0
+shapely==2.1.0
+pyproj==3.7.2
+matplotlib==3.10.8
+earthengine-api==1.7.25

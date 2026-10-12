@@ -2,49 +2,65 @@
 
 Code and summary results for:
 
-> Gabriela Morales Soto, Sandra Avila, Helio Pedrini. **Age is not Habitat Persistence: Forecasting Forest-Habitat Support to Prioritize Biodiversity Resurveys in the Atlantic Forest.** Tackling Climate Change with Machine Learning workshop at NeurIPS 2026 (poster).
+> Gabriela Morales Soto, Sandra Avila, Helio Pedrini. **Age is not Habitat Persistence: Forecasting Forest-Habitat Support to Prioritize Biodiversity Resurveys in the Atlantic Forest.** Tackling Climate Change with Machine Learning Workshop at NeurIPS 2026.
 
-The paper asks whether the site of a historical plant record still holds forest habitat, and which sites are likely to lose it next. It links GBIF occurrences to annual MapBiomas land-cover trajectories, propagates coordinate uncertainty by Monte Carlo sampling, and evaluates five-year habitat-loss forecasts (LightGBM and logistic regression) with spatially blocked, temporally frozen validation and a fixed field-budget decision metric.
+The paper asks whether the site of a historical plant record still holds forest habitat, and which sites are likely to lose it next. It links GBIF occurrences to annual MapBiomas land-cover trajectories, propagates coordinate uncertainty by Monte Carlo sampling, forecasts five-year habitat loss with LightGBM and logistic regression, and evaluates the ranking as a fixed field-budget decision.
+
+## Validation protocol
+
+Three different procedures are used, and they guarantee different things:
+
+| Procedure | Where | What it guarantees |
+|---|---|---|
+| **Temporal rolling-origin validation + frozen temporal test** | forecast (`24_landmark_forecast.py`) | hyperparameters are selected on cuts 1993→1998, →2003, →2008; the 2014→2019 test is never used for model development, so every evaluation predicts a later period than training |
+| **Spatial-block bootstrap** (117 blocks of 100 km, 1,000 resamples, paired across methods) | all forecast and decision metrics | uncertainty intervals account for spatial dependence between nearby localities |
+| **Spatial cross-fitting** (5-fold `GroupKFold` over 100 km blocks) | Rayleigh / Kaplan–Meier calibration (`22_survival_models.py`) | the persistence curve is evaluated on spatially held-out blocks |
+
+The forecast is **not** evaluated on spatially held-out localities: the same localities can appear in earlier training landmarks and in the 2014 test. Generalisation to unsampled regions is therefore not tested.
 
 ## Repository layout
 
 ```
 scripts/     analysis pipeline (run in the order below)
-results/     summary tables behind every number reported in the paper
+results/     summary tables behind the numbers reported in the paper
 figures/     final figures and the data behind them
-data/        inputs (only the 5 km grid is versioned; see "Data")
+data/        inputs; see data/README.md (only the 5 km grid is versioned)
 ```
 
 Script comments and diagnostic logs are written in Spanish; each script starts with a block explaining what it does and why.
 
 ## Data
 
-| Input | Source | Location |
-|---|---|---|
-| Plant occurrences | GBIF.org (7 May 2026) GBIF Occurrence Download, <https://doi.org/10.15468/dl.evgrnx>. Tracheophyta, Brazil, 1970–2026, georeferenced, no geospatial issues (4,455,560 records) | `data/0014792-260430073515954.zip` (not versioned, 637 MB) |
-| Land cover | MapBiomas Collection 10, Earth Engine asset `projects/mapbiomas-public/assets/brazil/lulc/collection10/mapbiomas_brazil_collection10_integration_v2`, accessed 2026-08-14. Forest classes 3, 4, 5, 49 | queried through Earth Engine |
-| Atlantic Forest boundary | biome boundary polygon | `data/mata_atlantica.gpkg` (not versioned) |
-| 5 km grid | derived from the biome boundary, EPSG:5880 | `data/grid_5km.gpkg` |
+See [`data/README.md`](data/README.md) for how to obtain each input.
 
-**Study extent.** The processed cohort is restricted to 19.5–25.7°S, 44.0–53.7°W (plus records labelled São Paulo state) and intersected with the Atlantic Forest, i.e. the south-central part of the biome. The box is defined in `scripts/build_tropical_mlm_sequences.py` (`LAT_MIN`, `LAT_MAX`, `LON_MIN`, `LON_MAX`). The resulting cohort has 491,228 records at 135,021 coordinates from 1985 onward.
+- **Occurrences:** GBIF.org (7 May 2026) GBIF Occurrence Download, <https://doi.org/10.15468/dl.evgrnx> (Tracheophyta, Brazil, 1970–2026, georeferenced, no geospatial issues; 4,455,560 records).
+- **Land cover:** MapBiomas Collection 10, Earth Engine asset `projects/mapbiomas-public/assets/brazil/lulc/collection10/mapbiomas_brazil_collection10_integration_v2`, accessed 2026-08-14; forest classes 3, 4, 5, 49.
+
+**Study extent.** The cohort is restricted to 19.5–25.7°S, 44.0–53.7°W (plus records labelled São Paulo state) and intersected with the Atlantic Forest, i.e. the south-central part of the biome. The box is defined in `scripts/build_tropical_mlm_sequences.py` (`LAT_MIN`, `LAT_MAX`, `LON_MIN`, `LON_MAX`). The resulting cohort has 491,228 records at 135,021 coordinates from 1985 onward.
 
 ## Pipeline
 
-Earth Engine steps (marked GEE) need an authenticated `earthengine-api` and a Google Cloud project: pass it with `--gee-project YOUR-PROJECT-ID`.
+Run every script from the repository root as `python scripts/<name>.py`; use `--help` for options. Default paths read and write under `data/`, `results/` and `figures/`. Earth Engine steps (GEE) need an authenticated `earthengine-api` and a Google Cloud project passed with `--gee-project`.
 
-| Step | Script | Produces | Paper |
-|---|---|---|---|
-| 0 | `build_tropical_mlm_sequences.py` | `data/processed/occurrences_with_cell_id.csv` (cohort) | Data and Methods |
-| 1 | `01e_record_obsolescence_histogram.py` (GEE) | per-record loss histograms at 0/100/250/500 m | |
-| 2 | `01f_buffer_sensitivity_common_cohort.py`, `01g_buffer_sensitivity_figure.py` | binary vs. continuous range factors | Fig. 1a |
-| 3 | `20_trajectory_extract.py` (GEE) | annual forest trajectories 1985–2024, bit-packed per pixel | |
-| 4 | `21_build_survival_dataset.py` | survival dataset, 20 positional Monte Carlo draws | |
-| 5 | `22_survival_models.py`, `22b_…`, `22c_…` | Rayleigh σ̂, Kaplan–Meier, IBS | Fig. 1b, Appendix C |
-| 6 | `24_landmark_forecast.py`, `24b_landmark_rolling_origin_extract.py` | landmark forecasts, frozen 2014 test, rolling-origin cuts | Table 1, Appendix B |
-| 7 | `25_resurvey_decision.py`, `25b_…`, `25c_…`, `29_decision_lift_bootstrap.py` | budgeted ranking, Lift@B, paired bootstrap, prospective 2024 ranking | Table 1, Fig. 1c, Appendix C |
-| 8 | `26b_prospective_map_appendix_figure.py` | prospective risk map | Fig. 2 |
-| 9 | `27_permutation_importance.py` | spatial-block permutation importance | Appendix A |
-| 10 | `28_forest_class_composition.py` (GEE) | forest-class composition and conversion | Results, Appendix C |
+| Step | Script | Main output |
+|---|---|---|
+| 0 | `build_tropical_mlm_sequences.py` (uses `gbif_archive_utils.py`) | `data/processed/occurrences_with_cell_id.csv` |
+| 1 | `01e_record_obsolescence_histogram.py` (GEE) | `results/record_level_histogram/record_loss_derived_all_buffers.csv` |
+| 2 | `01f_buffer_sensitivity_common_cohort.py` | `results/record_level_histogram/buffer_sensitivity_*.csv` |
+| 3 | `01g_buffer_sensitivity_figure.py` | `figures/fig_buffer_sensitivity.pdf` |
+| 4 | `20_trajectory_extract.py` (GEE) | `results/trajectory/` (annual forest trajectories, 1985–2024) |
+| 5 | `21_build_survival_dataset.py` | `results/survival/` (20 positional Monte Carlo draws) |
+| 6 | `22_survival_models.py` | `results/calibration/` (σ̂, IBS, horizon errors) |
+| 7 | `22b_survival_curves_figure.py`, then `22c_survival_curves_figure_render.py` | `figures/fig_survival_curves.pdf` |
+| 8 | `24_landmark_forecast.py` | `results/landmark/` (pooled metrics, paired bootstrap, predictions) |
+| 9 | `24b_landmark_rolling_origin_extract.py` | `results/landmark/per_landmark_validation.csv` |
+| 10 | `24d_test_metrics_per_draw.py` | `results/landmark/test_landmark_2014_metrics_per_draw.csv` |
+| 11 | `25_resurvey_decision.py` | `results/decision/` (Lift@B, top-B support, prospective 2024 ranking) |
+| 12 | `25b_cumulative_gain_locations_figure.py`, then `25c_cumulative_gain_figure_render.py` | `figures/fig_cumulative_gain.pdf` |
+| 13 | `29_decision_lift_bootstrap.py` | `results/decision/lift_bootstrap_diff_boosting_vs_logistic_2014.csv` |
+| 14 | `26b_prospective_map_appendix_figure.py` | `figures/fig_prospective_map_appendix.pdf` |
+| 15 | `27_permutation_importance.py` | `results/interpretation/permutation_importance.csv` |
+| 16 | `28_forest_class_composition.py` (GEE) | `results/interpretation/forest_class_composition.csv` |
 
 Example for the GEE steps:
 
@@ -62,19 +78,30 @@ python scripts/20_trajectory_extract.py \
   --gee-project YOUR-PROJECT-ID
 ```
 
-The remaining scripts read and write under `data/`, `results/` and `figures/` by default; run them from the repository root with `python scripts/<name>.py` (use `--help` for options).
+Fixed settings: seed 42, M = 20 positional draws, 250 m main buffer (500 m sensitivity), k = 2 consecutive non-forest years, five-year horizon, training landmarks 1993/1998/2003/2008, frozen test landmark 2014, LightGBM `num_leaves=7, learning_rate=0.05, n_estimators=150, min_child_samples=50`. The prospective 2024→2029 ranking refits LightGBM on landmarks 1993–2018 with the same hyperparameters.
 
-Fixed settings: seed 42, M = 20 positional draws, 250 m main buffer (500 m sensitivity), k = 2 consecutive non-forest years, five-year horizon, training landmarks 1993/1998/2003/2008, frozen test landmark 2014, 117 spatial blocks of 100 km, LightGBM `num_leaves=7, learning_rate=0.05, n_estimators=150, min_child_samples=50`.
+## Where each paper result comes from
 
-## Results included
+| Paper item | File |
+|---|---|
+| Fig. 1a, binary vs. converted range factors | `results/record_level_histogram/buffer_sensitivity_range_factor*.csv` |
+| Fig. 1b, σ̂ and IBS | `results/calibration/sigma_hat_k2_buffer250m.csv`, `ibs_summary_k2_buffer250m.csv` |
+| Table 1, AUROC / AUPRC | `results/landmark/test_landmark_2014_metrics_per_draw.csv` (mean over draws) |
+| Table 1, A_i and Lift@B; Fig. 1c | `results/decision/diagnostics_decision_2014.txt`, `figures/fig_cumulative_gain_data.csv` |
+| ΔAUROC / ΔAUPRC, paired | `results/landmark/test_landmark_2014_bootstrap_diffs.csv` |
+| ΔLift, paired | `results/decision/lift_bootstrap_diff_boosting_vs_logistic_2014.csv` |
+| Fig. 2, prospective ranking | `results/decision/prospective_localidades_2024_NO_OBSERVADO.csv`, `prospective_topB_candidatos_2024_NO_OBSERVADO.json` |
+| Appendix A, permutation importance | `results/interpretation/permutation_importance.csv` |
+| Appendix B, rolling-origin cuts | `results/landmark/per_landmark_validation.csv` |
+| Forest-class composition | `results/interpretation/forest_class_composition.csv` |
 
-`results/` contains the summary outputs behind the paper's numbers: buffer sensitivity (`record_level_histogram/`), survival calibration (`calibration/`), landmark metrics and paired bootstrap differences (`landmark/`), decision and Lift tables plus the prospective 2024→2029 ranking (`decision/`), and permutation importance and forest-class composition (`interpretation/`). Large intermediates (trajectories, survival datasets, row-level predictions) are not versioned and are regenerated by the pipeline.
+**Metric aggregation.** Table 1 reports AUROC and AUPRC computed within each positional draw and averaged over the 20 draws (`test_landmark_2014_metrics_per_draw.csv`). `test_landmark_2014_metrics.csv` instead computes them once over the pooled rows of all draws. The two agree for AUROC but not for AUPRC (e.g. LightGBM 0.0390 averaged vs. 0.0371 pooled), because average precision is not linear in the rows. Paired bootstrap differences are computed on pooled rows.
 
-The prospective ranking (`*_NO_OBSERVADO*`) is a forward projection with no observed outcome yet; it is not an independent validation.
+Large intermediates (trajectories, survival datasets, row-level predictions) are not versioned and are regenerated by the pipeline. The prospective ranking (`*_NO_OBSERVADO*`) is a forward projection with no observed outcome yet; it is not an independent validation.
 
 ## Requirements
 
-Python 3.11. See `requirements.txt`.
+Python 3.11. `requirements.txt` lists the packages; `requirements-lock.txt` gives the exact versions of the analysis environment.
 
 ## Citation
 

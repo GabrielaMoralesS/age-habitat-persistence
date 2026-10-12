@@ -235,7 +235,7 @@ def main() -> None:
     ax.set_xlim(0, args.max_budget)
     ax.set_ylim(bottom=0)
     ax.set_xlabel("Resurvey budget (localities)", fontsize=10)
-    ax.set_ylabel("Confirmed losses captured", fontsize=10)
+    ax.set_ylabel("Losses captured", fontsize=10)
     ax.legend(fontsize=9, loc="upper left")
     ax.grid(alpha=0.25, linewidth=0.5)
     fig.tight_layout()
